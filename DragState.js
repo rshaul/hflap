@@ -11,12 +11,12 @@ var DragState = (function () {
 	};
 
 	function Setup() {
-		Canvas.AddMouseMove(MouseMove);
-		Canvas.AddMouseDown(MouseDown);
+		Events.AddMouseMove(MouseMove);
+		Events.AddMouseDown(MouseDown);
 	}
 	function Teardown() {
-		Canvas.RemoveMouseMove(MouseMove);
-		Canvas.RemoveMouseDown(MouseDown);
+		Events.RemoveMouseMove(MouseMove);
+		Events.RemoveMouseDown(MouseDown);
 	}
 
 	function DragOffset(setter) {
@@ -54,7 +54,7 @@ var DragState = (function () {
 		if (CanDrag(point, state)) {
 			SetDragging(state);
  			delta = GetDelta(state.point, point);
-			Canvas.OneMouseUp(function() {
+			Events.OneMouseUp(function() {
 				SetDragging(null);
 			});
 		}

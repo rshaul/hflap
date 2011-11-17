@@ -1,5 +1,5 @@
 
-var Canvas = (function () {
+var Events = (function () {
 	var canvas = document.getElementById('canvas');
 
 	var canvasLeft = $(canvas).position().left;

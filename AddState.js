@@ -11,14 +11,14 @@ var AddState = (function() {
 
 	function Setup() {
 		Teardown();
-		Canvas.AddMouseMove(MoveFollower);
-		Canvas.AddClick(AddState);
+		Events.AddMouseMove(MoveFollower);
+		Events.AddClick(AddState);
 	}
 	function Teardown() {
 		color = 'gray';
 		follower = null;
-		Canvas.RemoveMouseMove(MoveFollower);
-		Canvas.RemoveClick(AddState);
+		Events.RemoveMouseMove(MoveFollower);
+		Events.RemoveClick(AddState);
 	}
 
 	function MoveFollower(point) {

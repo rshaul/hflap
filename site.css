@@ -58,6 +58,9 @@ body {
 #name {
 	width: 100px;
 }
+#remove {
+	margin-top: 1em;
+}
 .sizeButton {
 	text-decoration: none;
 	font-family: monospace;
@@ -65,4 +68,8 @@ body {
 	border: 1px solid black;
 	padding: 0 3px;
 	font-weight: bold;
+}
+
+#export {
+	margin-top: 1em;
 }

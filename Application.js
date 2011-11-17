@@ -5,8 +5,8 @@ var Application = (function() {
 	var canvasWidth, canvasHeight;
 	var currentTool;
 
-	Canvas.AddMouseMove(Draw);
-	Canvas.AddMouseDown(Draw);
+	Events.AddMouseMove(Draw);
+	Events.AddMouseDown(Draw);
 
 	$(window).resize(Resize);
 	Resize();
@@ -17,7 +17,9 @@ var Application = (function() {
 
 	return {
 		Draw: Draw,
-		GetDataUrl: GetDataUrl
+		GetDataUrl: GetDataUrl,
+		canvas: canvas,
+		ctx: ctx
 	};
 
 	function HandleTool(action) {
@@ -66,7 +68,9 @@ var Application = (function() {
 	}
 
 	function Draw() {
-		ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+		ctx.fillStyle = 'white';
+		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+		ctx.fillStyle = 'black';
 		AddPath.Draw(ctx);
 		DrawStates();
 		AddState.Draw(ctx);

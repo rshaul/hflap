@@ -11,12 +11,12 @@ var AddPath = (function() {
 	};
 
 	function Setup() {
-		Canvas.AddMouseMove(MouseMove);
-		Canvas.AddMouseDown(MouseDown);
+		Events.AddMouseMove(MouseMove);
+		Events.AddMouseDown(MouseDown);
 	}
 	function Teardown() {
-		Canvas.RemoveMouseMove(MouseMove);
-		Canvas.RemoveMouseDown(MouseDown);
+		Events.RemoveMouseMove(MouseMove);
+		Events.RemoveMouseDown(MouseDown);
 	}
 
 	function MouseMove(point) {
@@ -37,7 +37,7 @@ var AddPath = (function() {
 		var state = GetStateAt(point);
 		if (state) {
 			SetDragging(state);
-			Canvas.OneMouseUp(function(point) {
+			Events.OneMouseUp(function(point) {
 				AddPath(point);
 				SetDragging(null);
 			});

@@ -32,6 +32,8 @@ State.prototype.circle = function() {
 function Path() {
 	this.source = null;
 	this.destination = null;
+	this.hover = false;
+	this.active = false;
 	this.keys = [];
 }
 Path.prototype.label = function() {
@@ -64,6 +66,13 @@ function GetStateAt(point) {
 function SetCursor(cursor) {
 	if (!cursor) cursor = '';
 	$('#canvas').css('cursor', cursor);
+}
+
+function GetCanvas() {
+	return document.getElementById('canvas');
+}
+function GetContext() {
+	return GetCanvas().getContext('2d');
 }
 
 var states = [];

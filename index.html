@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>HFLAP</title>
+	<link href="site.css" rel="stylesheet" type="text/css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+</head>
+<body>
+	<div id="sideBar">
+		<div id="tools">
+			<a href="javascript:void(0)" id="pointTool">Point</a>
+			<a href="javascript:void(0)" id="stateTool">State</a>
+			<a href="javascript:void(0)" id="pathTool">Path</a>
+		</div>
+		<div id="info">
+			<h1>Edit State</h1>
+			<div>Name: <input type="text" id="name"></div>
+			<div>
+				<input type="checkbox" id="start"> <label for="start">Start</label>
+				<input type="checkbox" id="accept"> <label for="accept">Accept</label>
+			</div>
+			<div>
+				<input type="button" id="remove" value="Remove">
+			</div>
+		</div>
+		<div id="sizeControls">
+			Size:
+			<a href="javascript:AddSize(5);" class="sizeButton">+</a>
+			<a href="javascript:AddSize(-5);" class="sizeButton">-</a>
+		</div>
+		<div id="export">
+			<a href="javascript:Export();">Open As Image</a>
+		</div>
+	</div>
+	<canvas id="canvas"></canvas>
+
+	<script src="common.js"></script>
+	<script src="Canvas.js"></script>
+	<script src="selectState.js"></script>
+	<script src="AddState.js"></script>
+	<script src="DragState.js"></script>
+	<script src="AddPath.js"></script>
+	<script src="Application.js"></script>
+
+	<script type="text/javascript">
+		function AddSize(size) {
+			stateRadius += size;
+			Application.Draw();
+		}
+		function Export() {
+			var url = Application.GetDataUrl();
+			var w = window.open(url, '_blank');
+		}
+	</script>
+</body>
+</html>

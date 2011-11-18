@@ -6,9 +6,7 @@ Circle.prototype.contains = function(point) {
 	return this.distanceTo(point) <= this.radius;
 }
 Circle.prototype.distanceTo = function(point) {
-	var dx = this.point.x - point.x;
-	var dy = this.point.y - point.y;
-	return Math.sqrt(dx*dx + dy*dy);
+	return GetDistanceBetween(this.point, point);
 }
 Circle.prototype.overlaps = function(other) {
 	var d = this.distanceTo(other.point);
@@ -38,6 +36,12 @@ function Path() {
 }
 Path.prototype.label = function() {
 	return this.keys.join(' | ');
+}
+
+function GetDistanceBetween(p1, p2) {
+	var dx = p2.x - p1.x;
+	var dy = p2.y - p1.y;
+	return Math.sqrt(dx*dx + dy*dy);
 }
 
 function GetStatePoint(point) {

@@ -68,6 +68,7 @@ var Application = (function() {
 	}
 
 	function Draw() {
+		ctx.lineWidth = Math.ceil((stateRadius / 20) + 0.1);
 		ctx.fillStyle = 'white';
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 		ctx.fillStyle = 'black';
@@ -76,102 +77,119 @@ var Application = (function() {
 		AddState.Draw(ctx);
 	}
 
-	function Slope(p1, p2) {
-		return (p2.y - p1.y) / (p2.x - p1.x);
-	}
-	function Middle(p1, p2) {
-		return {
-			x: (p1.x + p2.x) / 2,
-			y: (p1.y + p2.y) / 2
-		};
+	function ControlPointLength() {
+		return stateRadius*1.5;
 	}
 	function ControlPoint(p1, p2) {
-		var slope = Slope(p1, p2);
-		var angle = Math.atan(slope);
-		var normal = Math.PI - angle;
-		var p = {
-			x: 100 * Math.cos(normal),
-			y: 100 * Math.sin(normal)
+		var center = {
+			x: (p2.x + p1.x) / 2,
+			y: (p2.y + p1.y) / 2
 		};
-		var middle = Middle(p1, p2);
+		var angle = GetAngle(p1, p2) + Math.PI / 2;
+		var length = ControlPointLength();
 		return {
-			x: middle.x + p.x,
-			y: middle.y + p.y
+			x: center.x + (length * Math.cos(angle)),
+			y: center.y + (length * Math.sin(angle))
 		};
 	}
-
-	function TrimRadius(p1, p2) {
-		var slope = Slope(p1, p2);
-		var angle = Math.atan(slope);
-		var p = {
-			x: stateRadius * Math.cos(angle),
-			y: stateRadius * Math.sin(angle)
-		};
-		return {
-			x: p1.x - p.x,
-			y: p1.y - p.y
-		};
+	function ControlPointAngle(p1, p2) {
+		var length = ControlPointLength();
+		var d = GetDistanceBetween(p1, p2) / 2;
+		var angle = Math.atan(length / d);
+		return angle;
 	}
 
 	function rad2deg(rad) {
 		return rad * 180 / Math.PI;
 	}
 
-	function DrawArrow(path) {
-		var sp = path.source.point;
-		var dp = path.destination.point;
-		var slope = Slope(sp, dp);
-		var angle = Math.atan(slope);
-		if (sp.x > dp.x) angle += Math.PI;
+	function DrawArrowHead(from, to, rotate) {
+		var angle = GetAngle(from, to) + rotate;
 		var armAngle = Math.PI * .13;
 		var armLength = stateRadius * .5;
-		var start = {
-			x: dp.x - (stateRadius * Math.cos(angle)),
-			y: dp.y - (stateRadius * Math.sin(angle))
-		};
 		var arm1 = {
-			x: start.x - (armLength * Math.cos(angle+armAngle)),
-			y: start.y - (armLength * Math.sin(angle+armAngle))
+			x: to.x - (armLength * Math.cos(angle+armAngle)),
+			y: to.y - (armLength * Math.sin(angle+armAngle))
 		};
 		var arm2 = {
-			x: start.x - (armLength * Math.cos(angle-armAngle)),
-			y: start.y - (armLength * Math.sin(angle-armAngle))
+			x: to.x - (armLength * Math.cos(angle-armAngle)),
+			y: to.y - (armLength * Math.sin(angle-armAngle))
 		};
 		var end = {
-			x: start.x - (0.6 * armLength * Math.cos(angle)),
-			y: start.y - (0.6 * armLength * Math.sin(angle))
+			x: to.x - (0.6 * armLength * Math.cos(angle)),
+			y: to.y - (0.6 * armLength * Math.sin(angle))
 		}
 		ctx.beginPath();
 		ctx.moveTo(arm1.x, arm1.y);
-		ctx.lineTo(start.x, start.y);
+		ctx.lineTo(to.x, to.y);
 		ctx.lineTo(arm2.x, arm2.y);
 		ctx.lineTo(end.x, end.y);
 		ctx.fill();
 	}
 
+	function GetAngle(p1, p2) {
+		var slope = (p2.y - p1.y) / (p2.x - p1.x);
+		var angle = Math.atan(slope);
+		if (p1.x > p2.x) angle += Math.PI;
+		return angle;
+	}
+
+	function TrimRadius(p1, p2, angleOffset) {
+		var angle = GetAngle(p1, p2) + angleOffset;
+		return {
+			x: p1.x + (stateRadius * Math.cos(angle + angleOffset)),
+			y: p1.y + (stateRadius * Math.sin(angle + angleOffset))
+		};
+	}
+
 	function GetReturnPath(path) {
 		for (var i=0; i < path.destination.paths.length; i++) {
 			var check = path.destination.paths[i];
-			if (check.destination = path.source) {
+			if (check.destination == path.source) {
 				return check;
 			}
 		}
 		return null;
 	}
+	function DrawStraightArrow(sp, dp) {
+		var from = TrimRadius(sp, dp, 0);
+		var to = TrimRadius(dp, sp, 0);
+		ctx.beginPath();
+		ctx.moveTo(from.x, from.y);
+		ctx.lineTo(to.x, to.y);
+		ctx.stroke();
+		DrawArrowHead(from, to, 0);
+	}
+	function DrawCurvedArrow(sp, dp) {
+		var offset = Math.PI * 0.04;
+		var from = TrimRadius(sp, dp, offset);
+		var to = TrimRadius(dp, sp, -offset);
+		var cp = ControlPoint(from, to);
+		ctx.beginPath();
+		ctx.moveTo(from.x, from.y);
+		ctx.lineTo(to.x, to.y);
+		//ctx.quadraticCurveTo(cp.x, cp.y, to.x, to.y);
+		ctx.stroke();
+		DrawArrowHead(from, to, 0);
+		//DrawArrowHead(from, to, -ControlPointAngle(from, to));
+	}
+
 	function DrawPaths(paths) {
 		for (var i=0; i < paths.length; i++) {
 			var path = paths[i];
 			var sp = path.source.point;
 			var dp = path.destination.point;
-			//sp = TrimRadius(sp, dp);
-			//dp = TrimRadius(dp, sp);
-			//var cp = ControlPoint(sp, dp);
+			var offset = 0;
+			if (GetReturnPath(path)) {
+				offset = Math.PI * 0.04;
+			}
+			var from = TrimRadius(sp, dp, offset);
+			var to = TrimRadius(dp, sp, -offset);
 			ctx.beginPath();
-			ctx.moveTo(sp.x, sp.y);
-			//ctx.quadraticCurveTo(cp.x, cp.y, dp.x, dp.y);
-			ctx.lineTo(dp.x, dp.y);
+			ctx.moveTo(from.x, from.y);
+			ctx.lineTo(to.x, to.y);
 			ctx.stroke();
-			DrawArrow(path);
+			DrawArrowHead(from, to);
 		}
 	}
 
@@ -184,13 +202,46 @@ var Application = (function() {
 		ctx.stroke();
 	}
 
+	function IsLeftMost(state) {
+		for (var i=0; i < states.length; i++) {
+			if (states[i] != state && states[i].point.x < state.point.x) return false;
+		}
+		return true;
+	}
+	function IsRightMost(state) {
+		for (var i=0; i < states.length; i++) {
+			if (states[i] != state && states[i].point.x > state.point.x) return false;
+		}
+		return true;
+	}
+	function IsBottomMost(state) {
+		for (var i=0; i < states.length; i++) {
+			if (states[i] != state && states[i].point.y > state.point.y) return false;
+		}
+		return true;
+	}
+	function DrawStartArrow(state) {
+		var size = stateRadius*2;
+		ctx.font = size + 'px sans-serif';
+		var offset = stateRadius;
+		if (IsLeftMost(state)) {
+			ctx.textAlign = "right";
+			ctx.fillText('⇢', state.point.x - offset, state.point.y, size*2);
+		} else if (IsRightMost(state)) {
+			ctx.textAlign = "left";
+			ctx.fillText('⇠', state.point.x + offset, state.point.y, size*2);
+		} else if (IsBottomMost(state)) {
+			ctx.textAlign = "center";
+			ctx.fillText('⇡', state.point.x, state.point.y + 2*offset, size);
+		} else {
+			ctx.textAlign = "center";
+			ctx.fillText('⇣', state.point.x, state.point.y - 2*offset, size);
+		}
+	}
+
 	function DrawStates() {
 		ctx.strokeStyle = 'black';
 		ctx.textBaseline = 'middle';
-		for (var i=0; i < states.length; i++) {
-			var state = states[i];
-			DrawPaths(state.paths);
-		}
 		for (var i=0; i < states.length; i++) {
 			var state = states[i];
 			var circle = state.circle();
@@ -206,10 +257,12 @@ var Application = (function() {
 			ctx.font = '20px sans-serif';
 			ctx.fillText(state.label, state.point.x, state.point.y, stateRadius*2);
 			if (state.start) {
-				ctx.textAlign = 'right';
-				ctx.font = stateRadius*2 + 'px sans-serif';
-				ctx.fillText('⇢', state.point.x - stateRadius, state.point.y, 60);
+				DrawStartArrow(state);
 			}
+		}
+		for (var i=0; i < states.length; i++) {
+			var state = states[i];
+			DrawPaths(state.paths);
 		}
 	}
 })();

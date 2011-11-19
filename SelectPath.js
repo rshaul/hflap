@@ -26,9 +26,10 @@ var SelectPath = (function() {
 
 	function AllPaths() {
 		var all = [];
-		for (var i=0; i < states.length; i++) {
-			for (var j=0; j < states[i].paths; j++) {
-				all.push(states[i].paths[j]);
+		for (var i=0; i < DFA.states.length; i++) {
+			var state = DFA.states[i];
+			for (var j=0; j < state.paths.length; j++) {
+				all.push(state.paths[j]);
 			}
 		}
 		return all;

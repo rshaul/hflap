@@ -1,5 +1,4 @@
 var DragState = (function () {
-	var dragOffset = 0;
 	var dragging = null;
 	var hovering = null;
 	var delta;
@@ -7,24 +6,15 @@ var DragState = (function () {
 	return {
 		Setup: Setup,
 		Teardown: Teardown,
-		DragOffset: DragOffset
 	};
 
 	function Setup() {
 		Events.AddMouseMove(MouseMove);
-		Events.AddMouseDown(MouseDown);
+		Events.AddMouseDown(StartDragState);
 	}
 	function Teardown() {
 		Events.RemoveMouseMove(MouseMove);
-		Events.RemoveMouseDown(MouseDown);
-	}
-
-	function DragOffset(setter) {
-		if (setter !== undefined) {
-			dragOffset = setter;
-		} else {
-			return dragOffset;
-		}
+		Events.RemoveMouseDown(StartDragState);
 	}
 
 	function MouseMove(point) {
@@ -42,11 +32,6 @@ var DragState = (function () {
 				SetHovering(null);
 			}
 		}
-	}
-
-	function MouseDown(point) {
-		SelectState(point);
-		StartDragState(point);
 	}
 
 	function StartDragState(point) {
@@ -82,8 +67,7 @@ var DragState = (function () {
 	function CanDrag(point, state) {
 		if (!state) return false;
 		var circle = state.circle();
-		var dragRadius = circle.radius + dragOffset;
-		return circle.distanceTo(point) <= dragRadius;
+		return circle.distanceTo(point) <= circle.radius;
 	}
 
 	function GetDelta(point1, point2) {

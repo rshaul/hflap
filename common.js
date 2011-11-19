@@ -24,7 +24,7 @@ function State() {
 	this.paths = [];
 }
 State.prototype.circle = function() {
-	return new Circle(this.point, stateRadius);
+	return new Circle(this.point, DFA.stateRadius);
 }
 
 function Path() {
@@ -45,12 +45,13 @@ function GetDistanceBetween(p1, p2) {
 }
 
 function GetStatePoint(point) {
+	var radius = DFA.stateRadius;
 	var canvas = $('#canvas');
-	var maxX = canvas.width() - stateRadius + canvas[0].scrollLeft;
-	var maxY = canvas.height() - stateRadius + canvas[0].scrollTop;
+	var maxX = canvas.width() - radius + canvas[0].scrollLeft;
+	var maxY = canvas.height() - radius + canvas[0].scrollTop;
 	return {
-		x: Bound(point.x, stateRadius, maxX),
-		y: Bound(point.y, stateRadius, maxY)
+		x: Bound(point.x, radius, maxX),
+		y: Bound(point.y, radius, maxY)
 	};
 
 	function Bound(value, min, max) {
@@ -59,8 +60,8 @@ function GetStatePoint(point) {
 }
 
 function GetStateAt(point) {
-	for (var i=states.length-1; i >= 0; i--) {
-		var state = states[i];
+	for (var i=DFA.states.length-1; i >= 0; i--) {
+		var state = DFA.states[i];
 		var circle = state.circle();
 		if (circle.contains(point)) return state;
 	}
@@ -79,6 +80,8 @@ function GetContext() {
 	return GetCanvas().getContext('2d');
 }
 
-var states = [];
-var stateRadius = 30;
-var nodeRadius = 6;
+var DFA = {
+	ghostSelfLoop: null,
+	states: [],
+	stateRadius: 30
+};

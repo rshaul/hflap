@@ -5,14 +5,16 @@ var Application = (function() {
 	var canvasWidth, canvasHeight;
 	var currentTool;
 
+	SelectState.Setup();
+
 	Events.AddMouseMove(Draw);
 	Events.AddMouseDown(Draw);
 
 	$(window).resize(Resize);
 	Resize();
 
-	$('#pointTool').click(HandleTool(PointTool)).click();
-	$('#stateTool').click(HandleTool(StateTool));
+	$('#pointTool').click(HandleTool(PointTool));
+	$('#stateTool').click(HandleTool(StateTool)).click();
 	$('#pathTool').click(HandleTool(PathTool));
 
 	return {
@@ -24,6 +26,8 @@ var Application = (function() {
 
 	function HandleTool(action) {
 		return function () {
+			$('#tools a').removeClass('selected');
+			$(this).addClass('selected');
 			currentTool = function() {
 				Reset();
 				action();
@@ -68,7 +72,9 @@ var Application = (function() {
 	}
 
 	function Draw() {
-		ctx.lineWidth = Math.ceil((stateRadius / 20) + 0.1);
+		var width = (DFA.stateRadius - 30) / 15;
+		if (width < 1) width = 1;
+		ctx.lineWidth = width;
 		ctx.fillStyle = 'white';
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 		ctx.fillStyle = 'black';
@@ -77,54 +83,8 @@ var Application = (function() {
 		AddState.Draw(ctx);
 	}
 
-	function ControlPointLength() {
-		return stateRadius*1.5;
-	}
-	function ControlPoint(p1, p2) {
-		var center = {
-			x: (p2.x + p1.x) / 2,
-			y: (p2.y + p1.y) / 2
-		};
-		var angle = GetAngle(p1, p2) + Math.PI / 2;
-		var length = ControlPointLength();
-		return {
-			x: center.x + (length * Math.cos(angle)),
-			y: center.y + (length * Math.sin(angle))
-		};
-	}
-	function ControlPointAngle(p1, p2) {
-		var length = ControlPointLength();
-		var d = GetDistanceBetween(p1, p2) / 2;
-		var angle = Math.atan(length / d);
-		return angle;
-	}
-
 	function rad2deg(rad) {
 		return rad * 180 / Math.PI;
-	}
-
-	function DrawArrowHead(from, to, rotate) {
-		var angle = GetAngle(from, to) + rotate;
-		var armAngle = Math.PI * .13;
-		var armLength = stateRadius * .5;
-		var arm1 = {
-			x: to.x - (armLength * Math.cos(angle+armAngle)),
-			y: to.y - (armLength * Math.sin(angle+armAngle))
-		};
-		var arm2 = {
-			x: to.x - (armLength * Math.cos(angle-armAngle)),
-			y: to.y - (armLength * Math.sin(angle-armAngle))
-		};
-		var end = {
-			x: to.x - (0.6 * armLength * Math.cos(angle)),
-			y: to.y - (0.6 * armLength * Math.sin(angle))
-		}
-		ctx.beginPath();
-		ctx.moveTo(arm1.x, arm1.y);
-		ctx.lineTo(to.x, to.y);
-		ctx.lineTo(arm2.x, arm2.y);
-		ctx.lineTo(end.x, end.y);
-		ctx.fill();
 	}
 
 	function GetAngle(p1, p2) {
@@ -134,135 +94,172 @@ var Application = (function() {
 		return angle;
 	}
 
-	function TrimRadius(p1, p2, angleOffset) {
-		var angle = GetAngle(p1, p2) + angleOffset;
-		return {
-			x: p1.x + (stateRadius * Math.cos(angle + angleOffset)),
-			y: p1.y + (stateRadius * Math.sin(angle + angleOffset))
-		};
-	}
+	function DrawPath(path) {
+		var ArrowHeadArmLength = DFA.stateRadius * 0.5;
+		var ArrowHeadEndLength = ArrowHeadArmLength * 0.6;
 
-	function GetReturnPath(path) {
-		for (var i=0; i < path.destination.paths.length; i++) {
-			var check = path.destination.paths[i];
-			if (check.destination == path.source) {
-				return check;
-			}
+		var sp = path.source.point;
+		var dp = path.destination.point;
+		var offset = 0;
+		if (GetReturnPath(path)) {
+			offset = Math.PI * 0.04;
 		}
-		return null;
-	}
-	function DrawStraightArrow(sp, dp) {
-		var from = TrimRadius(sp, dp, 0);
-		var to = TrimRadius(dp, sp, 0);
+		var from = TrimRadius(sp, dp, 0, offset);
+		var to = TrimRadius(dp, sp, 0, -offset);
 		ctx.beginPath();
 		ctx.moveTo(from.x, from.y);
 		ctx.lineTo(to.x, to.y);
 		ctx.stroke();
-		DrawArrowHead(from, to, 0);
-	}
-	function DrawCurvedArrow(sp, dp) {
-		var offset = Math.PI * 0.04;
-		var from = TrimRadius(sp, dp, offset);
-		var to = TrimRadius(dp, sp, -offset);
-		var cp = ControlPoint(from, to);
-		ctx.beginPath();
-		ctx.moveTo(from.x, from.y);
-		ctx.lineTo(to.x, to.y);
-		//ctx.quadraticCurveTo(cp.x, cp.y, to.x, to.y);
-		ctx.stroke();
-		DrawArrowHead(from, to, 0);
-		//DrawArrowHead(from, to, -ControlPointAngle(from, to));
-	}
+		DrawArrowHead(from, to);
+		DrawSelfLoop(path);
 
-	function DrawPaths(paths) {
-		for (var i=0; i < paths.length; i++) {
-			var path = paths[i];
-			var sp = path.source.point;
-			var dp = path.destination.point;
-			var offset = 0;
-			if (GetReturnPath(path)) {
-				offset = Math.PI * 0.04;
+		function TrimRadius(p1, p2, radiusOffset, angleOffset) {
+			var angle = GetAngle(p1, p2) + angleOffset;
+			var radius = DFA.stateRadius + radiusOffset;
+			return {
+				x: p1.x + (radius * Math.cos(angle)),
+				y: p1.y + (radius * Math.sin(angle))
+			};
+		}
+
+		function GetReturnPath(path) {
+			for (var i=0; i < path.destination.paths.length; i++) {
+				var check = path.destination.paths[i];
+				if (check.destination == path.source) {
+					return check;
+				}
 			}
-			var from = TrimRadius(sp, dp, offset);
-			var to = TrimRadius(dp, sp, -offset);
+			return null;
+		}
+
+		function DrawArrowHead(from, to) {
+			var angle = GetAngle(from, to);
+			var armAngle = Math.PI * .13;
+			var arm1 = {
+				x: to.x - (ArrowHeadArmLength * Math.cos(angle+armAngle)),
+				y: to.y - (ArrowHeadArmLength * Math.sin(angle+armAngle))
+			};
+			var arm2 = {
+				x: to.x - (ArrowHeadArmLength * Math.cos(angle-armAngle)),
+				y: to.y - (ArrowHeadArmLength * Math.sin(angle-armAngle))
+			};
+			var end = {
+				x: to.x - (ArrowHeadEndLength * Math.cos(angle)),
+				y: to.y - (ArrowHeadEndLength * Math.sin(angle))
+			}
 			ctx.beginPath();
-			ctx.moveTo(from.x, from.y);
+			ctx.moveTo(arm1.x, arm1.y);
 			ctx.lineTo(to.x, to.y);
-			ctx.stroke();
-			DrawArrowHead(from, to);
+			ctx.lineTo(arm2.x, arm2.y);
+			ctx.lineTo(end.x, end.y);
+			ctx.fill();
 		}
 	}
 
-	function DrawCircle(circle) {
-		var point = circle.point;
-		var radius = circle.radius;
+	function DrawCircle(point, radius) {
 		ctx.beginPath();
 		ctx.arc(point.x, point.y, radius, 0, Math.PI*2, false);
 		ctx.fill();
 		ctx.stroke();
 	}
 
-	function IsLeftMost(state) {
-		for (var i=0; i < states.length; i++) {
-			if (states[i] != state && states[i].point.x < state.point.x) return false;
-		}
-		return true;
-	}
-	function IsRightMost(state) {
-		for (var i=0; i < states.length; i++) {
-			if (states[i] != state && states[i].point.x > state.point.x) return false;
-		}
-		return true;
-	}
-	function IsBottomMost(state) {
-		for (var i=0; i < states.length; i++) {
-			if (states[i] != state && states[i].point.y > state.point.y) return false;
-		}
-		return true;
-	}
 	function DrawStartArrow(state) {
-		var size = stateRadius*2;
+		var point = state.point;
+		var radius = state.circle().radius;
+		var size = radius*2;
 		ctx.font = size + 'px sans-serif';
-		var offset = stateRadius;
+		var xoffset = radius;
+		var yoffset = 1.9 * radius;
+
 		if (IsLeftMost(state)) {
 			ctx.textAlign = "right";
-			ctx.fillText('⇢', state.point.x - offset, state.point.y, size*2);
+			ctx.fillText('⇢', point.x - xoffset, point.y, size*2);
 		} else if (IsRightMost(state)) {
 			ctx.textAlign = "left";
-			ctx.fillText('⇠', state.point.x + offset, state.point.y, size*2);
+			ctx.fillText('⇠', point.x + xoffset, point.y, size*2);
 		} else if (IsBottomMost(state)) {
 			ctx.textAlign = "center";
-			ctx.fillText('⇡', state.point.x, state.point.y + 2*offset, size);
+			ctx.fillText('⇡', point.x, point.y + yoffset, size);
 		} else {
 			ctx.textAlign = "center";
-			ctx.fillText('⇣', state.point.x, state.point.y - 2*offset, size);
+			ctx.fillText('⇣', point.x, point.y - yoffset, size);
+		}
+
+		function IsLeftMost(state) {
+			for (var i=0; i < DFA.states.length; i++) {
+				if (DFA.states[i].point.x < state.point.x) return false;
+			}
+			return true;
+		}
+		function IsRightMost(state) {
+			for (var i=0; i < DFA.states.length; i++) {
+				if (DFA.states[i].point.x > state.point.x) return false;
+			}
+			return true;
+		}
+		function IsBottomMost(state) {
+			for (var i=0; i < DFA.states.length; i++) {
+				if (DFA.states[i].point.y > state.point.y) return false;
+			}
+			return true;
 		}
 	}
+
+	function DrawSelfLoop(path) {
+		var state = path.source;
+		DrawSelfLoopFor(state);
+	}
+
+	function DrawSelfLoopFor(state) {
+		var point = state.point;
+		var radius = state.circle().radius;
+		var from = OnCircle(point, radius, Math.PI * -0.7);
+		var cp1 = OnCircle(point, radius*3, Math.PI * -0.55);
+		var cp2 = OnCircle(point, radius*3, Math.PI * -0.45);
+		var to = OnCircle(point, radius, Math.PI * -0.3);
+		//var cp = OnCircle(state.point, DFA.stateRadius*4, Math.PI * -0.5);
+
+		ctx.beginPath();
+		ctx.moveTo(from.x, from.y);
+		//ctx.quadraticCurveTo(cp.x, cp.y, to.x, to.y);
+		ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, to.x, to.y);
+		ctx.stroke();
+
+		function OnCircle(point, radius, angle) {
+			return {
+				x: point.x + (radius * Math.cos(angle)),
+				y: point.y + (radius * Math.sin(angle))
+			};
+		}
+	}
+
 
 	function DrawStates() {
 		ctx.strokeStyle = 'black';
 		ctx.textBaseline = 'middle';
-		for (var i=0; i < states.length; i++) {
-			var state = states[i];
-			var circle = state.circle();
+		for (var i=0; i < DFA.states.length; i++) {
+			var state = DFA.states[i];
+			var point = state.point;
+			var radius = state.circle().radius;
 			ctx.fillStyle = (state.hover) ? '#DDD' : '#FFF';
 			ctx.fillStyle = (state.drag) ? '#AAA' : ctx.fillStyle;
-			DrawCircle(state.circle());
+			DrawCircle(point, radius);
 			if (state.accept) {
-				circle.radius -= 4;
-				DrawCircle(circle);
+				DrawCircle(point, radius * 0.87);
 			}
 			ctx.fillStyle = '#000';
 			ctx.textAlign = 'center';
-			ctx.font = '20px sans-serif';
-			ctx.fillText(state.label, state.point.x, state.point.y, stateRadius*2);
+			ctx.font = (radius * .66) + 'px sans-serif';
+			ctx.fillText(state.label, point.x, point.y, radius*2);
 			if (state.start) {
 				DrawStartArrow(state);
 			}
 		}
-		for (var i=0; i < states.length; i++) {
-			var state = states[i];
-			DrawPaths(state.paths);
+		for (var i=0; i < DFA.states.length; i++) {
+			var state = DFA.states[i];
+			for (var j=0; j < state.paths.length; j++) {
+				DrawPath(state.paths[j]);
+			}
 		}
 	}
 })();

@@ -3,6 +3,7 @@ var AddPath = (function() {
 	var hovering;
 	var dragging;
 	var draggingTo;
+	var leftHome;
 
 	return {
 		Draw: Draw,
@@ -30,11 +31,13 @@ var AddPath = (function() {
 		} else {
 			SetHovering(null);
 			SetCursor();
+			leftHome = true;
 		}
 	}
 
 	function MouseDown(point) {
 		var state = GetStateAt(point);
+		leftHome = false;
 		if (state) {
 			SetDragging(state);
 			Events.OneMouseUp(function(point) {
@@ -44,18 +47,18 @@ var AddPath = (function() {
 		}
 	}
 
-	function GetPath(source, destination) {
+	function HasPath(source, destination) {
 		for (var i=0; i < source.paths.length; i++) {
 			var path = source.paths[i];
-			if (path.destination == destination) return path;
+			if (path.destination == destination) return true;
 		}
-		return null;
+		return false;
 	}
 
 	function AddPath(point) {
 		var destination = GetStateAt(point);
-		if (dragging && destination) {
-			if (!GetPath(dragging, destination)) {
+		if (dragging && destination && leftHome) {
+			if (!HasPath(dragging, destination)) {
 				var path = new Path();
 				path.source = dragging;
 				path.destination = destination;

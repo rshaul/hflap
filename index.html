@@ -9,9 +9,9 @@
 <body>
 	<div id="sideBar">
 		<div id="tools">
-			<a href="javascript:void(0)" id="pointTool" title="Pointer"><img src="image/point.png"></a>
-			<a href="javascript:void(0)" id="stateTool" title="State"><img src="image/state.png"></a>
-			<a href="javascript:void(0)" id="pathTool" title="Transition"><img src="image/path.png"></a>
+			<a href="javascript:void(0)" id="pointTool" title="Pointer (A)"><img src="image/point.png"></a>
+			<a href="javascript:void(0)" id="stateTool" title="State (S)"><img src="image/state.png"></a>
+			<a href="javascript:void(0)" id="pathTool" title="Transition (D)"><img src="image/path.png"></a>
 		</div>
 		<div id="info" class="controlBox">
 			<h1>Edit State</h1>
@@ -30,8 +30,8 @@
 			<div class="content">
 				<div id="sizeControls">
 					Size:
-					<a href="javascript:AddSize(5);" class="sizeButton">+</a>
-					<a href="javascript:AddSize(-5);" class="sizeButton">-</a>
+					<a href="javascript:IncreaseSize();" class="sizeButton" title="Increase Size (+)">+</a>
+					<a href="javascript:DecreaseSize();" class="sizeButton" title="Decrease Size (-)">-</a>
 				</div>
 				<div id="image">
 					<a href="javascript:Clear();" title="Clear all states">Clear</a>
@@ -43,6 +43,7 @@
 	<canvas id="canvas"></canvas>
 
 	<script src="common.js"></script>
+	<script src="hotkeys.js"></script>
 	<script src="Events.js"></script>
 	<script src="SelectState.js"></script>
 	<script src="AddState.js"></script>
@@ -51,9 +52,13 @@
 	<script src="Application.js"></script>
 
 	<script type="text/javascript">
-		function AddSize(size) {
-			stateRadius += size;
-			if (stateRadius < 5) stateRadius = 5;
+		function IncreaseSize() {
+			DFA.stateRadius += 5;
+			Application.Draw();
+		}
+		function DecreaseSize() {
+			DFA.stateRadius -= 5;
+			if (DFA.stateRadius < 5) DFA.stateRadius = 5;
 			Application.Draw();
 		}
 		function Image() {

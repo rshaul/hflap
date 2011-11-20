@@ -14,8 +14,8 @@ var SelectState = (function() {
 	};
 
 	function DrawEvent(action) {
-		return function() {
-			action();
+		return function(e) {
+			action(e);
 			Application.Draw();
 		};
 	}
@@ -54,8 +54,9 @@ var SelectState = (function() {
 		}
 	}
 
-	function NameChanged() {
+	function NameChanged(e) {
 		selected.label = nameBox.val();
+		e.stopPropagation();
 	}
 
 	function StartChanged() {

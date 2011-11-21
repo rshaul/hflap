@@ -1,83 +1,54 @@
 
+/*
+ * Didn't like how I couldn't pass exactly the
+ * event arguments I wanted to jQuery.trigger()
+ */
 var Events = (function () {
-	var canvas = document.getElementById('canvas');
-
-	var canvasLeft = $(canvas).position().left;
-	var canvasTop = $(canvas).position().top;
-
-	var moveEvents = [];
-	var clickEvents = [];
-	var downEvents = [];
-
-	canvas.addEventListener('mousemove', MouseMove);
-	canvas.addEventListener('click', Click);
-	canvas.addEventListener('mousedown', MouseDown);
+	var events = {};
+	var one = {};
 
 	return {
-		AddMouseMove: AddMouseMove,
-		AddClick: AddClick,
-		AddMouseDown: AddMouseDown,
-		RemoveMouseMove: RemoveMouseMove,
-		RemoveClick: RemoveClick,
-		RemoveMouseDown: RemoveMouseDown,
-		OneMouseUp: OneMouseUp
+		On: On,
+		Off: Off,
+		One: One,
+		Trigger: Trigger,
 	};
 
-	function AddMouseMove(action) {
-		moveEvents.push(action);
-	}
-	function AddClick(action) {
-		clickEvents.push(action);
-	}
-	function AddMouseDown(action) {
-		downEvents.push(action);
+	function On(name, action) {
+		if (events[name] === undefined) events[name] = [];
+		events[name].push(action);
 	}
 
-
-	function RemoveMouseMove(action) {
-		Remove(action, moveEvents);
-	}
-	function RemoveClick(action) {
-		Remove(action, clickEvents);
-	}
-	function RemoveMouseDown(action) {
-		Remove(action, downEvents);
-	}
-	function Remove(action, events) {
-		for (var i=0; i < events.length; i++) {
-			if (events[i] == action) {
-				events.splice(i, 1);
+	function Off(name, action) {
+		if (events[name]) {
+			for (var i=0; i < events[name].length; i++) {
+				if (events[name][i] == action) {
+					events[name].splice(i, 1);
+				}
 			}
 		}
 	}
 
-	function OneMouseUp(action) {
-		$(document).one('mouseup', function(e) {
-			action(GetPoint(e));
-		});
+	function One(name, action) {
+		if (one[name] === undefined) one[name] = [];
+		one[name].push(action);
 	}
 
-	function GetPoint(e) {
-		return {
-			x: e.pageX - canvasLeft,
-			y: e.pageY - canvasTop
-		};
-	}
-
-	function Click(e) {
-		DoEvents(e, clickEvents);
-	}
-	function MouseMove(e) {
-		DoEvents(e, moveEvents);
-	}
-	function MouseDown(e) {
-		DoEvents(e, downEvents);
-	}
-
-	function DoEvents(e, events) {
-		var point = GetPoint(e);
-		for (var i=0; i < events.length; i++) {
-			events[i](point);
+	function Trigger(name /*, event args, ...*/) {
+		// copy arguments
+		var args = [].slice.call(arguments);
+		// Remove 'name'
+		args.shift();
+		if (events[name]) {
+			for (var i=0; i < events[name].length; i++) {
+				events[name][i].apply(document, args);
+			}
+		}
+		if (one[name]) {
+			for (var i=0; i < one[name].length; i++) {
+				one[name][i].apply(document, args);
+			}
+			one[name] = [];
 		}
 	}
 	

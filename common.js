@@ -15,7 +15,7 @@ Circle.prototype.overlaps = function(other) {
 
 function State() {
 	this.id = 0;
-	this.label = 'q0';
+	this._label = 'q0';
 	this.point = {x:0, y:0};
 	this.start = false;
 	this.accept = false;
@@ -26,16 +26,44 @@ function State() {
 State.prototype.circle = function() {
 	return new Circle(this.point, DFA.stateRadius);
 }
+State.prototype.label = function(setter) {
+	if (setter !== undefined) {
+		this._label = setter;
+		Events.Trigger('StateChange', this);
+	} else {
+		return this._label;
+	}
+}
 
 function Path() {
 	this.source = null;
 	this.destination = null;
+	this.on = null;
 	this.hover = false;
 	this.active = false;
-	this.keys = [];
 }
-Path.prototype.label = function() {
-	return this.keys.join(' | ');
+Path.prototype.keys = function() {
+	if (!this.on) return [];
+	var keys = this.on.split('');
+	for (var i=0; i < keys.length; i++) {
+		if (!IsValidKey(keys[i])) {
+			keys.splice(i, 1);
+			i--;
+		}
+	}
+	return keys;
+}
+
+function IsValidKey(key) {
+	var k = C(key);
+	if (k >= C('A') && k <= C('Z')) return true;
+	if (k >= C('a') && k <= C('z')) return true;
+	if (k >= C('0') && k <= C('9')) return true;
+	return false;
+
+	function C(s) {
+		return s.charCodeAt(0);
+	}
 }
 
 function GetDistanceBetween(p1, p2) {
@@ -81,7 +109,28 @@ function GetContext() {
 }
 
 var DFA = {
-	ghostSelfLoop: null,
 	states: [],
 	stateRadius: 30
 };
+
+(function() {
+	function GetPoint(e) {
+		var pos = $('#canvas').position();
+		return {
+			x: e.pageX - pos.left,
+			y: e.pageY - pos.top
+		};
+	}
+
+	function MouseHandler(name) {
+		return function(e) {
+			Events.Trigger(name, GetPoint(e));
+		}
+	}
+
+	var canvas = GetCanvas();
+	canvas.addEventListener('mousemove', MouseHandler('MouseMove'));
+	canvas.addEventListener('click', MouseHandler('Click'));
+	canvas.addEventListener('mousedown', MouseHandler('MouseDown'));
+	document.addEventListener('mouseup', MouseHandler('MouseUp'));
+})();

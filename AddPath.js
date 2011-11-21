@@ -12,12 +12,12 @@ var AddPath = (function() {
 	};
 
 	function Setup() {
-		Events.AddMouseMove(MouseMove);
-		Events.AddMouseDown(MouseDown);
+		Events.On('MouseMove', MouseMove);
+		Events.On('MouseDown', MouseDown);
 	}
 	function Teardown() {
-		Events.RemoveMouseMove(MouseMove);
-		Events.RemoveMouseDown(MouseDown);
+		Events.Off('MouseMove', MouseMove);
+		Events.Off('MouseDown', MouseDown);
 	}
 
 	function MouseMove(point) {
@@ -40,7 +40,7 @@ var AddPath = (function() {
 		leftHome = false;
 		if (state) {
 			SetDragging(state);
-			Events.OneMouseUp(function(point) {
+			Events.One('MouseUp', function(point) {
 				AddPath(point);
 				SetDragging(null);
 			});
@@ -63,6 +63,8 @@ var AddPath = (function() {
 				path.source = dragging;
 				path.destination = destination;
 				dragging.paths.push(path);
+
+				SelectPath.Select(path);
 			}
 		}
 	}

@@ -11,14 +11,14 @@ var AddState = (function() {
 
 	function Setup() {
 		Teardown();
-		Events.AddMouseMove(MoveFollower);
-		Events.AddClick(AddState);
+		Events.On('MouseMove', MoveFollower);
+		Events.On('Click', AddState);
 	}
 	function Teardown() {
 		color = 'gray';
 		follower = null;
-		Events.RemoveMouseMove(MoveFollower);
-		Events.RemoveClick(AddState);
+		Events.Off('MouseMove', MoveFollower);
+		Events.Off('Click', AddState);
 	}
 
 	function MoveFollower(point) {
@@ -32,7 +32,7 @@ var AddState = (function() {
 
 		var state = new State();
 		state.id = NewId();
-		state.label = NewLabel();
+		state.label(NewLabel());
 		state.point = point;
 		if (DFA.states.length == 0) state.start = true;
 		DFA.states.push(state);
@@ -42,7 +42,7 @@ var AddState = (function() {
 
 	function LabelExists(label) {
 		for (var i=0; i < DFA.states.length; i++) {
-			if (DFA.states[i].label == label) return true;
+			if (DFA.states[i].label() == label) return true;
 		}
 		return false;
 	}

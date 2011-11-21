@@ -9,12 +9,12 @@ var DragState = (function () {
 	};
 
 	function Setup() {
-		Events.AddMouseMove(MouseMove);
-		Events.AddMouseDown(StartDragState);
+		Events.On('MouseMove', MouseMove);
+		Events.On('MouseDown', StartDragState);
 	}
 	function Teardown() {
-		Events.RemoveMouseMove(MouseMove);
-		Events.RemoveMouseDown(StartDragState);
+		Events.Off('MouseMove', MouseMove);
+		Events.Off('MouseDown', StartDragState);
 	}
 
 	function MouseMove(point) {
@@ -39,7 +39,7 @@ var DragState = (function () {
 		if (CanDrag(point, state)) {
 			SetDragging(state);
  			delta = GetDelta(state.point, point);
-			Events.OneMouseUp(function() {
+			Events.One('MouseUp', function() {
 				SetDragging(null);
 			});
 		}

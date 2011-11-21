@@ -2,10 +2,11 @@
 var SelectState = (function() {
 
 	var selected;
+	var infoBox = $('#stateInfo');
 	var nameBox = $('#name');
 	var startBox = $('#start');
 	var acceptBox = $('#accept');
-	var removeButton = $('#remove');
+	var removeButton = $('#removeState');
 	
 	return {
 		Setup: Setup,
@@ -21,15 +22,19 @@ var SelectState = (function() {
 	}
 
 	function Setup() {
-		Events.AddMouseDown(MouseDown);
+		Events.On('MouseDown', MouseDown);
+		Events.On('MouseUp', MouseUp);
 		nameBox.on('keyup', DrawEvent(NameChanged));
+		nameBox.on('keydown', function(e) { e.stopPropagation(); });
 		startBox.on('click', DrawEvent(StartChanged));
 		acceptBox.on('click', DrawEvent(AcceptChanged));
 		removeButton.on('click', DrawEvent(RemoveSelected));
 	}
 	function Teardown() {
-		Events.RemoveMouseDown(MouseDown);
+		Events.Off('MouseDown', MouseDown);
+		Events.Off('MouseUp', MouseUp);
 		nameBox.off('keyup');
+		nameBox.off('keydown');
 		startBox.off('click');
 		acceptBox.off('accept');
 		removeButton.off('click');
@@ -41,27 +46,31 @@ var SelectState = (function() {
 			Select(state);
 		}
 	}
+	function MouseUp(point) {
+		MouseDown(point);
+	}
 
 	function Select(state) {
 		selected = state;
 		if (state) {
-			$('#info').show();
-			nameBox.val(state.label);
+			infoBox.show();
+			nameBox.val(state.label());
 			startBox.prop('checked', state.start);
 			acceptBox.prop('checked', state.accept);
 		} else {
-			$('#info').hide();
+			infoBox.hide();
 		}
 	}
 
 	function NameChanged(e) {
-		selected.label = nameBox.val();
+		selected.label(nameBox.val());
 		e.stopPropagation();
+		return false;
 	}
 
 	function StartChanged() {
-		for (var i=0; i < states.length; i++) {
-			states[i].start = false;
+		for (var i=0; i < DFA.states.length; i++) {
+			DFA.states[i].start = false;
 		}
 		selected.start = startBox.prop('checked');
 	}
@@ -87,6 +96,7 @@ var SelectState = (function() {
 				}
 			}
 		}
+		Events.Trigger('StateRemove', selected);
 		if (states.length == 0) {
 			Select(null);
 		} else {

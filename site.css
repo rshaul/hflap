@@ -9,9 +9,9 @@ body {
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 10px 10px 10px 210px;
-	-moz-user-select: none;
-	-webkit-user-select: none;
-	user-select: none;
+}
+img {
+	border: 0;
 }
 
 #container {
@@ -43,7 +43,10 @@ body {
 
 #tools {
 	text-align: center;
-	margin: 1em 0;
+	position: relative;
+	left: 50%;
+	width: 94px;
+	margin: 1em 0 1em -47px;
 }
 #tools a {
 	background: #C0C0C0;
@@ -68,25 +71,28 @@ body {
 	clear: both;
 }
 
-.controlBox {
-	border: 1px solid black;
-	margin-bottom: 1em;
+.option {
 	background: #C0C0C0;
+	border-bottom: 1px solid black;
 	padding: 5px;
+	border: 1px solid black;
+	position: relative;
+	margin-bottom: 10px;
 }
-.controlBox h1 {
+
+.option h1 {
 	font-size: medium;
 	font-weight: bold;
+	margin-bottom: 10px;
 }
-#info {
+#stateInfo, #pathInfo {
 	display: none;
 } 
-#name {
+#name, #on {
 	width: 100px;
-	margin-top: 13px;
 }
-#remove {
-	margin-top: 13px;
+#removeState, #removePath {
+	margin-top: 10px;
 }
 
 
@@ -100,8 +106,4 @@ body {
 	border: 1px solid black;
 	padding: 0 3px;
 	font-weight: bold;
-}
-
-#export {
-	margin-top: 1em;
 }

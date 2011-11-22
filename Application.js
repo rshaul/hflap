@@ -18,9 +18,6 @@ var Application = (function() {
 	$('#stateTool').click(HandleTool(StateTool)).click();
 	$('#pathTool').click(HandleTool(PathTool));
 
-	var kevin = false;
-	setTimeout(function() { kevin = true; }, 10000);
-
 	return {
 		Draw: Draw,
 		GetDataUrl: GetDataUrl,
@@ -81,13 +78,6 @@ var Application = (function() {
 		ctx.lineWidth = width;
 		ctx.fillStyle = 'white';
 		ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-		ctx.fillStyle = 'red';
-		ctx.textBaseline = 'top';
-		ctx.textAlign = 'left';
-		ctx.font = '100px sans-serif';
-		if (kevin) {
-			ctx.fillText('KEVINKEVINKEVINKEVINKEVIN', 0, 0);
-		}
 		ctx.fillStyle = 'black';
 		AddPath.Draw(ctx);
 		DrawStates();
@@ -96,13 +86,6 @@ var Application = (function() {
 
 	function rad2deg(rad) {
 		return rad * 180 / Math.PI;
-	}
-
-	function GetAngle(p1, p2) {
-		var slope = (p2.y - p1.y) / (p2.x - p1.x);
-		var angle = Math.atan(slope);
-		if (p1.x > p2.x) angle += Math.PI;
-		return angle;
 	}
 
 	function DrawPathLabel(from, to, label, flip, above) {
@@ -162,16 +145,6 @@ var Application = (function() {
 				x: p1.x + (radius * Math.cos(angle)),
 				y: p1.y + (radius * Math.sin(angle))
 			};
-		}
-
-		function GetReturnPath(path) {
-			for (var i=0; i < path.destination.paths.length; i++) {
-				var check = path.destination.paths[i];
-				if (check.destination == path.source) {
-					return check;
-				}
-			}
-			return null;
 		}
 
 		function DrawArrowHead(from, to) {

@@ -40,7 +40,6 @@ function Path() {
 	this.destination = null;
 	this.on = null;
 	this.hover = false;
-	this.active = false;
 }
 Path.prototype.keys = function() {
 	if (!this.on) return [];
@@ -53,6 +52,17 @@ Path.prototype.keys = function() {
 	}
 	return keys;
 }
+Path.prototype.from = function() {
+}
+Path.prototype.returnPath = function() {
+	for (var i=0; i < this.destination.paths.length; i++) {
+		var check = this.destination.paths[i];
+		if (check.destination == this.source) {
+			return check;
+		}
+	}
+	return null;
+}
 
 function IsValidKey(key) {
 	var k = C(key);
@@ -64,6 +74,13 @@ function IsValidKey(key) {
 	function C(s) {
 		return s.charCodeAt(0);
 	}
+}
+
+function GetAngle(p1, p2) {
+	var slope = (p2.y - p1.y) / (p2.x - p1.x);
+	var angle = Math.atan(slope);
+	if (p1.x > p2.x) angle += Math.PI;
+	return angle;
 }
 
 function GetDistanceBetween(p1, p2) {

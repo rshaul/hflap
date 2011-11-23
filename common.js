@@ -6,11 +6,35 @@ Circle.prototype.contains = function(point) {
 	return this.distanceTo(point) <= this.radius;
 }
 Circle.prototype.distanceTo = function(point) {
-	return GetDistanceBetween(this.point, point);
+	var line = new Line(this.point, point);
+	return line.length();
 }
 Circle.prototype.overlaps = function(other) {
 	var d = this.distanceTo(other.point);
 	return d <= this.radius + other.radius;
+}
+
+
+function Line(from, to) {
+	this.from = from;
+	this.to = to;
+}
+Line.prototype.angle = function () {
+	var slope = (this.to.y - this.from.y) / (this.to.x - this.from.x);
+	var angle = Math.atan(slope);
+	if (this.from.x > this.to.x) angle += Math.PI;
+	return angle;
+}
+Line.prototype.center = function() {
+	return {
+		x: (this.from.x + this.to.x) / 2,
+		y: (this.from.y + this.to.y) / 2
+	};
+}
+Line.prototype.length = function() {
+	var dx = this.from.x - this.to.x;
+	var dy = this.from.y - this.to.y;
+	return Math.sqrt(dx*dx + dy*dy);
 }
 
 function State() {
@@ -52,7 +76,13 @@ Path.prototype.keys = function() {
 	}
 	return keys;
 }
-Path.prototype.from = function() {
+Path.prototype.line = function() {
+	var line = new Line(this.source.point, this.destination.point);
+	var angle = line.angle();
+	var offset = this.returnPath() ? Math.PI * 0.04 : 0;
+	var from = OnCircle(this.source.point, DFA.stateRadius, angle + offset);
+	var to = OnCircle(this.destination.point, DFA.stateRadius, (angle + Math.PI) - offset);
+	return new Line(from, to);
 }
 Path.prototype.returnPath = function() {
 	for (var i=0; i < this.destination.paths.length; i++) {
@@ -62,6 +92,13 @@ Path.prototype.returnPath = function() {
 		}
 	}
 	return null;
+}
+
+function OnCircle(point, radius, angle) {
+	return {
+		x: point.x + (radius * Math.cos(angle)),
+		y: point.y + (radius * Math.sin(angle))
+	};
 }
 
 function IsValidKey(key) {
@@ -74,19 +111,6 @@ function IsValidKey(key) {
 	function C(s) {
 		return s.charCodeAt(0);
 	}
-}
-
-function GetAngle(p1, p2) {
-	var slope = (p2.y - p1.y) / (p2.x - p1.x);
-	var angle = Math.atan(slope);
-	if (p1.x > p2.x) angle += Math.PI;
-	return angle;
-}
-
-function GetDistanceBetween(p1, p2) {
-	var dx = p2.x - p1.x;
-	var dy = p2.y - p1.y;
-	return Math.sqrt(dx*dx + dy*dy);
 }
 
 function GetStatePoint(point) {

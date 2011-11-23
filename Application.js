@@ -88,12 +88,9 @@ var Application = (function() {
 		return rad * 180 / Math.PI;
 	}
 
-	function DrawPathLabel(from, to, label, flip, above) {
-		var center = {
-			x: (from.x + to.x) / 2,
-			y: (from.y + to.y) / 2
-		}
-		var angle = GetAngle(from, to);
+	function DrawPathLabel(path, flip, above) {
+		var center = path.line().center();
+		var angle = path.line().angle();
 		if (flip) {
 			angle += Math.PI;
 		}
@@ -108,60 +105,38 @@ var Application = (function() {
 			ctx.textBaseline = 'top';
 			yoffset = 3;
 		}
-		ctx.fillText(label, 0, yoffset);
+		ctx.fillText(path.keys().join(','), 0, yoffset);
 		ctx.restore();
 	}
 
 	function DrawPath(path) {
-		var ArrowHeadArmLength = DFA.stateRadius * 0.5;
-		var ArrowHeadEndLength = ArrowHeadArmLength * 0.6;
+		var line = path.line();
+		var from = line.from;
+		var to = line.to;
 
-		var sp = path.source.point;
-		var dp = path.destination.point;
-		var flipLabel = (sp.x > dp.x);
-		var returnPath = GetReturnPath(path);
-
+		var flipLabel = (from.x > to.x);
 		var labelAbove = true;
-		var offset = 0;
-		if (returnPath) {
-			offset = Math.PI * 0.04;
+		if (path.returnPath()) {
+			labelAbove = from.x < to.x;
 		}
-		var from = TrimRadius(sp, dp, 0, -offset);
-		var to = TrimRadius(dp, sp, 0, offset);
-		if (returnPath) {
-			labelAbove = from.x < sp.y;
-		}
+
 		ctx.beginPath();
 		ctx.moveTo(from.x, from.y);
 		ctx.lineTo(to.x, to.y);
 		ctx.stroke();
-		DrawArrowHead(from, to);
-		DrawPathLabel(from, to, path.keys().join(','), flipLabel, labelAbove);
+		DrawArrowHead(line);
+		DrawPathLabel(path, flipLabel, labelAbove);
 
-		function TrimRadius(p1, p2, radiusOffset, angleOffset) {
-			var angle = GetAngle(p1, p2) + angleOffset;
-			var radius = DFA.stateRadius + radiusOffset;
-			return {
-				x: p1.x + (radius * Math.cos(angle)),
-				y: p1.y + (radius * Math.sin(angle))
-			};
-		}
-
-		function DrawArrowHead(from, to) {
-			var angle = GetAngle(from, to);
+		function DrawArrowHead(line) {
+			var angle = line.angle() + Math.PI;
+			var to = line.to;
 			var armAngle = Math.PI * .13;
-			var arm1 = {
-				x: to.x - (ArrowHeadArmLength * Math.cos(angle+armAngle)),
-				y: to.y - (ArrowHeadArmLength * Math.sin(angle+armAngle))
-			};
-			var arm2 = {
-				x: to.x - (ArrowHeadArmLength * Math.cos(angle-armAngle)),
-				y: to.y - (ArrowHeadArmLength * Math.sin(angle-armAngle))
-			};
-			var end = {
-				x: to.x - (ArrowHeadEndLength * Math.cos(angle)),
-				y: to.y - (ArrowHeadEndLength * Math.sin(angle))
-			}
+			var length = DFA.stateRadius * 0.5;
+
+			var arm1 = OnCircle(to, length, angle+armAngle);
+			var arm2 = OnCircle(to, length, angle-armAngle);
+			var end = OnCircle(to, length * 0.6, angle);
+
 			ctx.beginPath();
 			ctx.moveTo(arm1.x, arm1.y);
 			ctx.lineTo(to.x, to.y);
@@ -240,13 +215,6 @@ var Application = (function() {
 		ctx.moveTo(from.x, from.y);
 		ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, to.x, to.y);
 		ctx.stroke();
-
-		function OnCircle(point, radius, angle) {
-			return {
-				x: point.x + (radius * Math.cos(angle)),
-				y: point.y + (radius * Math.sin(angle))
-			};
-		}
 	}
 
 

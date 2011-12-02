@@ -19,9 +19,15 @@ function Line(from, to) {
 	this.from = from;
 	this.to = to;
 }
-Line.prototype.angle = function () {
-	var slope = (this.to.y - this.from.y) / (this.to.x - this.from.x);
-	var angle = Math.atan(slope);
+Line.prototype.slope = function() {
+	return (this.to.y - this.from.y) / (this.to.x - this.from.x);
+}
+Line.prototype.getY = function(x) {
+	var dx = x - this.from.x;
+	return (this.slope() * dx) + this.from.y;
+}
+Line.prototype.angle = function() {
+	var angle = Math.atan(this.slope());
 	if (this.from.x > this.to.x) angle += Math.PI;
 	return angle;
 }
@@ -113,6 +119,17 @@ function IsValidKey(key) {
 	}
 }
 
+function AllPaths() {
+	var all = [];
+	for (var i=0; i < DFA.states.length; i++) {
+		var state = DFA.states[i];
+		for (var j=0; j < state.paths.length; j++) {
+			all.push(state.paths[j]);
+		}
+	}
+	return all;
+}
+
 function GetStatePoint(point) {
 	var radius = DFA.stateRadius;
 	var canvas = $('#canvas');
@@ -174,4 +191,6 @@ var DFA = {
 	canvas.addEventListener('click', MouseHandler('Click'));
 	canvas.addEventListener('mousedown', MouseHandler('MouseDown'));
 	document.addEventListener('mouseup', MouseHandler('MouseUp'));
+	
+	Events.On('MouseMove', function() { SetCursor(); });
 })();

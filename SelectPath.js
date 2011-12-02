@@ -1,14 +1,12 @@
 
 var SelectPath = (function() {
-	var ctx = GetContext();
 
+	var selected;
 	var infoBox = $('#pathInfo');
 	var fromState = $('#fromState');
 	var toState = $('#toState');
 	var on = $('#on');
 	var remove = $('#removePath');
-
-	var selected;
 
 	return {
 		Setup: Setup,
@@ -97,16 +95,5 @@ var SelectPath = (function() {
 				Select(null);
 			}
 		}
-	}
-
-	function AllPaths() {
-		var all = [];
-		for (var i=0; i < DFA.states.length; i++) {
-			var state = DFA.states[i];
-			for (var j=0; j < state.paths.length; j++) {
-				all.push(state.paths[j]);
-			}
-		}
-		return all;
 	}
 })();

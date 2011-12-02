@@ -28,7 +28,6 @@ var DragState = (function () {
 				SetCursor('move');
 				SetHovering(state);
 			} else if (hovering) {
-				SetCursor();
 				SetHovering(null);
 			}
 		}

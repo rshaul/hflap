@@ -51,6 +51,7 @@ var Application = (function() {
 		AddState.Teardown();
 		AddPath.Teardown();
 		DragState.Teardown();
+		HoverPath.Teardown();
 	}
 	function PointTool() {
 		DragState.Setup();
@@ -61,6 +62,7 @@ var Application = (function() {
 	}
 	function PathTool() {
 		AddPath.Setup();
+		HoverPath.Setup();
 	}
 
 	function Resize() {
@@ -120,12 +122,18 @@ var Application = (function() {
 			labelAbove = from.x < to.x;
 		}
 
+		ctx.save();
+		if (path.hover) {
+			ctx.fillStyle = 'red';
+			ctx.strokeStyle = 'red';
+		}
 		ctx.beginPath();
 		ctx.moveTo(from.x, from.y);
 		ctx.lineTo(to.x, to.y);
 		ctx.stroke();
 		DrawArrowHead(line);
 		DrawPathLabel(path, flipLabel, labelAbove);
+		ctx.restore();
 
 		function DrawArrowHead(line) {
 			var angle = line.angle() + Math.PI;

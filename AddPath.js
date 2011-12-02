@@ -30,7 +30,6 @@ var AddPath = (function() {
 			SetCursor('crosshair');
 		} else {
 			SetHovering(null);
-			SetCursor();
 			leftHome = true;
 		}
 	}

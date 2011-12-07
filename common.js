@@ -211,17 +211,17 @@ var DFA = {
 		};
 	}
 
-	function MouseHandler(name) {
+	function GetMouseHandler(name) {
 		return function(e) {
 			Events.Trigger(name, GetPoint(e));
 		}
 	}
 
 	var canvas = GetCanvas();
-	canvas.addEventListener('mousemove', MouseHandler('MouseMove'));
-	canvas.addEventListener('click', MouseHandler('Click'));
-	canvas.addEventListener('mousedown', MouseHandler('MouseDown'));
-	document.addEventListener('mouseup', MouseHandler('MouseUp'));
+	canvas.addEventListener('mousemove', GetMouseHandler('MouseMove'));
+	canvas.addEventListener('click', GetMouseHandler('Click'));
+	canvas.addEventListener('mousedown', GetMouseHandler('MouseDown'));
+	document.addEventListener('mouseup', GetMouseHandler('MouseUp'));
 	
 	Events.On('MouseMove', function() { SetCursor(); });
 	$('#input').on('keyup', function() { $('#result').html(''); });

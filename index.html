@@ -70,14 +70,15 @@
 	<script src="Evaluate.js"></script>
 
 	<script type="text/javascript">
-		function GoToEvaluate() {
-			$('#sideBarEvaluate').show();
-			$('#sideBarTools').hide();
+		function HasCanvasSupport(){
+			var elem = document.createElement('canvas');
+			return !!(elem.getContext && elem.getContext('2d'));
 		}
-		function GoToTools() {
-			$('#sideBarTools').show();
-			$('#sideBarEvaluate').hide();
+
+		if (!HasCanvasSupport()) {
+			alert('Your browser is too old to run this application. Try again with the latest version of a modern browser.');
 		}
+		
 		function IncreaseSize() {
 			DFA.stateRadius += 5;
 			Application.Draw();

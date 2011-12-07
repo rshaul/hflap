@@ -1,14 +1,15 @@
 
 var AddPath = (function() {
 	var hovering;
+	var previewSelfLoop;
 	var dragging;
 	var draggingTo;
 	var leftHome;
 
 	return {
-		Draw: Draw,
 		Setup: Setup,
-		Teardown: Teardown
+		Teardown: Teardown,
+		Draw: Draw
 	};
 
 	function Setup() {
@@ -18,6 +19,10 @@ var AddPath = (function() {
 	function Teardown() {
 		Events.Off('MouseMove', MouseMove);
 		Events.Off('MouseDown', MouseDown);
+		SetHovering(null);
+		SetPreviewSelfLoop(null);
+		SetDragging(null);
+		leftHome = false;
 	}
 
 	function MouseMove(point) {
@@ -28,8 +33,12 @@ var AddPath = (function() {
 		if (state) {
 			SetHovering(state);
 			SetCursor('crosshair');
+			if (leftHome && state == dragging) {
+				SetPreviewSelfLoop(state);
+			}
 		} else {
 			SetHovering(null);
+			SetPreviewSelfLoop(null);
 			leftHome = true;
 		}
 	}
@@ -70,27 +79,32 @@ var AddPath = (function() {
 
 	function SetHovering(state) {
 		if (hovering) hovering.hover = false;
-		if (state) {
-			hovering = state;
+		hovering = state;
+		if (hovering) {
 			hovering.hover = true;
-		} else {
-			hovering = null;
 		}
 	}
 	function SetDragging(state) {
 		if (dragging) dragging.drag = false;
-		if (state) {
-			dragging = state;
+		dragging = state;
+		if (dragging) {
 			dragging.drag = true;
 		} else {
-			dragging = null;
 			draggingTo = null;
+		}
+	}
+	function SetPreviewSelfLoop(state) {
+		if (previewSelfLoop) previewSelfLoop.previewSelfLoop = false;
+		previewSelfLoop = state;
+		if (previewSelfLoop) {
+			previewSelfLoop.previewSelfLoop = true;
 		}
 	}
 
 	function Draw(ctx) {
 		if (dragging && draggingTo) {
 			var point = dragging.point;
+			ctx.beginPath();
 			ctx.moveTo(point.x, point.y);
 			ctx.lineTo(draggingTo.x, draggingTo.y);
 			ctx.stroke();

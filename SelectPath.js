@@ -5,7 +5,7 @@ var SelectPath = (function() {
 	var infoBox = $('#pathInfo');
 	var fromState = $('#fromState');
 	var toState = $('#toState');
-	var on = $('#on');
+	var label = $('#label');
 	var remove = $('#removePath');
 
 	return {
@@ -22,28 +22,17 @@ var SelectPath = (function() {
 	}
 
 	function Setup() {
-		Events.On('MouseOver', MouseOver);
-		Events.On('Click', Click);
 		Events.On('StateChange', RefreshStateText);
 		Events.On('StateRemove', StateRemove);
-		on.on('keydown', function(e) { e.stopPropagation(); });
-		on.on('keyup', DrawEvent(OnChanged));
+		label.on('keyup', DrawEvent(LabelChanged));
 		remove.on('click', DrawEvent(RemoveSelected));
 	}
 
 	function Teardown() {
-		Events.Off('MouseOver', MouseOver);
-		Events.Off('Click', Click);
 		Events.Off('StateChange', RefreshStateText);
 		Events.Off('StateRemove', StateRemove);
-		on.off('keyup');
+		label.off('keyup');
 		remove.off('click');
-	}
-
-	function MouseOver(point) {
-		var paths = AllPaths();
-		for (var i=0; i < paths.length; i++) {
-		}
 	}
 
 	function RefreshStateText() {
@@ -53,17 +42,8 @@ var SelectPath = (function() {
 		}
 	}
 
-	function GetPathHoveringAt(point) {
-	}
-
-	function IsHoveringOverPath(point, path) {
-	}
-
-	function Click() {
-	}
-
-	function OnChanged() {
-		selected.on = on.val();
+	function LabelChanged() {
+		selected.label = label.val();
 	}
 
 	function RemoveSelected() {
@@ -76,13 +56,24 @@ var SelectPath = (function() {
 				}
 			}
 		}
+		Select(LastPath());
+	}
+
+	function LastPath() {
+		for (var i=DFA.states.length-1; i >= 0; i--) {
+			var state = DFA.states[i];
+			for (var j=state.paths.length-1; j >= 0; j--) {
+				return state.paths[j];
+			}
+		}
+		return null;
 	}
 
 	function Select(path) {
 		selected = path;
 		if (path) {
 			infoBox.show();
-			on.val(path.on);
+			label.val(path.label);
 			RefreshStateText();
 		} else {
 			infoBox.hide();

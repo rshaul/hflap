@@ -25,7 +25,6 @@ var SelectState = (function() {
 		Events.On('MouseDown', MouseDown);
 		Events.On('MouseUp', MouseUp);
 		nameBox.on('keyup', DrawEvent(NameChanged));
-		nameBox.on('keydown', function(e) { e.stopPropagation(); });
 		startBox.on('click', DrawEvent(StartChanged));
 		acceptBox.on('click', DrawEvent(AcceptChanged));
 		removeButton.on('click', DrawEvent(RemoveSelected));
@@ -34,7 +33,6 @@ var SelectState = (function() {
 		Events.Off('MouseDown', MouseDown);
 		Events.Off('MouseUp', MouseUp);
 		nameBox.off('keyup');
-		nameBox.off('keydown');
 		startBox.off('click');
 		acceptBox.off('accept');
 		removeButton.off('click');

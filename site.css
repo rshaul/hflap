@@ -1,4 +1,5 @@
 html, body, table, td, h1, h2, h3 { margin: 0; padding: 0; }
+textarea, input { margin: 0; }
 html, body {
 	height: 100%;
 }
@@ -28,13 +29,14 @@ img {
 #sideBar {
 	float: left;
 	margin-left: -200px;
-	width: 200px;
 	height: 100%;
+	width: 200px;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 	padding: 3px;
 	background: #646464;
+	overflow: auto;
 }
 
 #sideBar a {
@@ -45,21 +47,21 @@ img {
 	text-align: center;
 	position: relative;
 	left: 50%;
-	width: 94px;
-	margin: 1em 0 1em -47px;
+	width: 123px;
+	margin: 1em 0 1em -62px;
+	background: #C0C0C0;
+	border: 1px solid black;
 }
 #tools a {
-	background: #C0C0C0;
 	display: block;
 	width: 24px;
 	height: 24px;
 	padding: 3px;
 	float: left;
-	border: 1px solid black;
-	border-right: 0;
+	border-right: 1px solid black;
 }
 #tools a:last-child {
-	border: 1px solid black;
+	border: 0;
 }
 #tools a.selected {
 	box-shadow: 2px 2px 3px #555 inset;
@@ -88,7 +90,7 @@ img {
 #stateInfo, #pathInfo {
 	display: none;
 } 
-#name, #on {
+#name, #label {
 	width: 100px;
 }
 #removeState, #removePath {
@@ -105,5 +107,28 @@ img {
 	color: black;
 	border: 1px solid black;
 	padding: 0 3px;
+	font-weight: bold;
+}
+
+#input {
+	width: 170px;
+}
+.log {
+	margin: 1ex 0;
+}
+
+#clearLogs {
+	display: block;
+	font-size: smaller;
+	text-align: right;
+}
+
+
+#result {
+	display: inline;
+}
+#result.error {
+	display: block;
+	padding: 4px;
 	font-weight: bold;
 }

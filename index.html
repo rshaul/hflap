@@ -12,31 +12,46 @@
 			<a href="javascript:void(0)" id="pointTool" title="Pointer (A)"><img src="image/point.png"></a>
 			<a href="javascript:void(0)" id="stateTool" title="State (S)"><img src="image/state.png"></a>
 			<a href="javascript:void(0)" id="pathTool" title="Transition (D)"><img src="image/path.png"></a>
+			<a href="javascript:void(0)" id="evaluateTool" title="Evaluate (F)"><img src="image/evaluate.png"></a>
 		</div>
-		<div id="stateInfo" class="option">
-			<h1>Edit State</h1>
-			<div>Name: <input type="text" id="name" maxlength="5"></div>
-			<div>
-				<input type="checkbox" id="start"> <label for="start">Start</label>
-				<input type="checkbox" id="accept"> <label for="accept">Accept</label>
+		<div id="sideBarEdit">
+			<div id="stateInfo" class="option">
+				<h1>Edit State</h1>
+				<div>Name: <input type="text" id="name" maxlength="5"></div>
+				<div>
+					<input type="checkbox" id="start"> <label for="start">Start</label>
+					<input type="checkbox" id="accept"> <label for="accept">Accept</label>
+				</div>
+				<input type="button" id="removeState" value="Remove">
 			</div>
-			<input type="button" id="removeState" value="Remove">
-		</div>
-		<div id="pathInfo" class="option">
-			<h1>Edit Transition</h1>
-			<div><span id="fromState"></span> → <span id="toState"></div>
-			<div>On Input: <input type="text" id="on"></div>
-			<input type="button" id="removePath" value="Remove">
-		</div>
-		<div class="option">
-			<div id="sizeControls">
-				Size:
-				<a href="javascript:IncreaseSize();" class="sizeButton" title="Increase Size (+)">+</a>
-				<a href="javascript:DecreaseSize();" class="sizeButton" title="Decrease Size (-)">-</a>
+			<div id="pathInfo" class="option">
+				<h1>Edit Transition</h1>
+				<div><span id="fromState"></span> → <span id="toState"></div>
+				<div>On Input: <input type="text" id="label"></div>
+				<input type="button" id="removePath" value="Remove">
 			</div>
-			<div id="image">
-				<a href="javascript:Clear();" title="Clear all states">Clear</a>
-				- <a href="javascript:Image();" title="Open as an image">Image</a>
+			<div class="option">
+				<div id="sizeControls">
+					Size:
+					<a href="javascript:IncreaseSize();" class="sizeButton" title="Increase Size (+)">+</a>
+					<a href="javascript:DecreaseSize();" class="sizeButton" title="Decrease Size (-)">-</a>
+				</div>
+				<div id="image">
+					<a href="javascript:Clear();" title="Clear all states">Clear</a>
+					- <a href="javascript:Image();" title="Open as an image">Image</a>
+				</div>
+			</div>
+		</div>
+		<div id="sideBarEvaluate" style="display: none;">
+			<div class="option">
+				Evaluate Input:
+				<textarea id="input" rows="3" cols="20"></textarea>
+				<input type="button" id="evaluate" value="Evaluate" onclick="Evaluate();">
+				<div id="result"></div>
+			</div>
+			<div class="option">
+				<div id="logs"></div>
+				<a href="javascript:ClearLogs();" id="clearLogs">Clear</a>
 			</div>
 		</div>
 	</div>
@@ -52,8 +67,17 @@
 	<script src="AddPath.js"></script>
 	<script src="HoverPath.js"></script>
 	<script src="Application.js"></script>
+	<script src="Evaluate.js"></script>
 
 	<script type="text/javascript">
+		function GoToEvaluate() {
+			$('#sideBarEvaluate').show();
+			$('#sideBarTools').hide();
+		}
+		function GoToTools() {
+			$('#sideBarTools').show();
+			$('#sideBarEvaluate').hide();
+		}
 		function IncreaseSize() {
 			DFA.stateRadius += 5;
 			Application.Draw();
@@ -71,6 +95,10 @@
 			if (confirm("Clear all?")) {
 				window.location.reload(true);
 			}
+		}
+		function ClearLogs() {
+			$('#logs').html('');
+			$('#result').html('');
 		}
 	</script>
 </body>

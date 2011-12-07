@@ -15,6 +15,8 @@ var DragState = (function () {
 	function Teardown() {
 		Events.Off('MouseMove', MouseMove);
 		Events.Off('MouseDown', StartDragState);
+		SetDragging(null);
+		SetHovering(null);
 	}
 
 	function MouseMove(point) {

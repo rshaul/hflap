@@ -15,6 +15,14 @@ Circle.prototype.overlaps = function(other) {
 }
 
 
+function Curve() {
+	this.from = null;
+	this.cp1 = null;
+	this.cp2 = null;
+	this.to = null;
+}
+
+
 function Line(from, to) {
 	this.from = from;
 	this.to = to;
@@ -26,9 +34,17 @@ Line.prototype.getY = function(x) {
 	var dx = x - this.from.x;
 	return (this.slope() * dx) + this.from.y;
 }
+Line.prototype.getX = function(y) {
+	var dy = y - this.from.y;
+	return ((1 / this.slope()) * dy) + this.from.x;
+}
 Line.prototype.angle = function() {
 	var angle = Math.atan(this.slope());
-	if (this.from.x > this.to.x) angle += Math.PI;
+	if (this.from.x > this.to.x) {
+		angle += Math.PI;
+	} else if (angle < 0) {
+		angle += Math.PI * 2;
+	} 
 	return angle;
 }
 Line.prototype.center = function() {
@@ -51,6 +67,8 @@ function State() {
 	this.accept = false;
 	this.drag = false;
 	this.hover = false;
+	this.previewSelfLoop = false;
+	this.selfLoopAngle = Math.PI * -0.5;
 	this.paths = [];
 }
 State.prototype.circle = function() {
@@ -64,23 +82,35 @@ State.prototype.label = function(setter) {
 		return this._label;
 	}
 }
+State.prototype.hasSelfLoop = function() {
+	for (var i=0; i < this.paths.length; i++) {
+		if (this.paths[i].isSelfLoop()) return true;
+	}
+	return false;
+}
+State.prototype.selfLoopCurve = function() {
+	var point = this.point;
+	var radius = DFA.stateRadius;
+	var angle = this.selfLoopAngle;
+	var curve = new Curve();
+	curve.from = OnCircle(point, radius, angle - Math.PI * 0.2);
+	curve.cp1 = OnCircle(point, radius*3, angle - Math.PI * 0.07);
+	curve.cp2 = OnCircle(point, radius*3, angle + Math.PI * 0.07);
+	curve.to = OnCircle(point, radius, angle + Math.PI * 0.2);
+	return curve;
+}
 
 function Path() {
 	this.source = null;
 	this.destination = null;
-	this.on = null;
+	this.label = null;
 	this.hover = false;
 }
+Path.prototype.isSelfLoop = function() {
+	return this.source == this.destination;
+}
 Path.prototype.keys = function() {
-	if (!this.on) return [];
-	var keys = this.on.split('');
-	for (var i=0; i < keys.length; i++) {
-		if (!IsValidKey(keys[i])) {
-			keys.splice(i, 1);
-			i--;
-		}
-	}
-	return keys;
+	return ParseInput(this.label);
 }
 Path.prototype.line = function() {
 	var line = new Line(this.source.point, this.destination.point);
@@ -100,34 +130,35 @@ Path.prototype.returnPath = function() {
 	return null;
 }
 
+function ParseInput(input) {
+	if (!input) return [];
+	var keys = input.split('');
+	for (var i=0; i < keys.length; i++) {
+		if (!IsValidKey(keys[i])) {
+			keys.splice(i, 1);
+			i--;
+		}
+	}
+	return keys;
+
+	function IsValidKey(key) {
+		var k = C(key);
+		if (k >= C('A') && k <= C('Z')) return true;
+		if (k >= C('a') && k <= C('z')) return true;
+		if (k >= C('0') && k <= C('9')) return true;
+		return false;
+
+		function C(s) {
+			return s.charCodeAt(0);
+		}
+	}
+}
+
 function OnCircle(point, radius, angle) {
 	return {
 		x: point.x + (radius * Math.cos(angle)),
 		y: point.y + (radius * Math.sin(angle))
 	};
-}
-
-function IsValidKey(key) {
-	var k = C(key);
-	if (k >= C('A') && k <= C('Z')) return true;
-	if (k >= C('a') && k <= C('z')) return true;
-	if (k >= C('0') && k <= C('9')) return true;
-	return false;
-
-	function C(s) {
-		return s.charCodeAt(0);
-	}
-}
-
-function AllPaths() {
-	var all = [];
-	for (var i=0; i < DFA.states.length; i++) {
-		var state = DFA.states[i];
-		for (var j=0; j < state.paths.length; j++) {
-			all.push(state.paths[j]);
-		}
-	}
-	return all;
 }
 
 function GetStatePoint(point) {
@@ -193,4 +224,5 @@ var DFA = {
 	document.addEventListener('mouseup', MouseHandler('MouseUp'));
 	
 	Events.On('MouseMove', function() { SetCursor(); });
+	$('#input').on('keyup', function() { $('#result').html(''); });
 })();

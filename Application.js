@@ -22,9 +22,7 @@ var Application = (function() {
 
 	return {
 		Draw: Draw,
-		GetDataUrl: GetDataUrl,
-		canvas: canvas,
-		ctx: ctx
+		GetDataUrl: GetDataUrl
 	};
 
 	function GetToolHandler(action) {
@@ -152,8 +150,6 @@ var Application = (function() {
 		var from = line.from;
 		var to = line.to;
 
-		var flipLabel = false;
-		//var flipLabel = (from.x > to.x);
 		var labelAbove = true;
 
 		var returnPath = path.returnPath();
@@ -171,9 +167,9 @@ var Application = (function() {
 		ctx.lineTo(to.x, to.y);
 		ctx.stroke();
 		DrawArrowHead(line.to, line.angle() + Math.PI);
-		DrawPathLabel(path, flipLabel, labelAbove);
+		DrawPathLabel(path, labelAbove);
 
-		function DrawPathLabel(path, flip, above) {
+		function DrawPathLabel(path, above) {
 			var stateLine = new Line(path.source.point, path.destination.point);
 			var angle = stateLine.angle();
 			if (angle >= Math.PI * .5 && angle < Math.PI * 1.5) {
